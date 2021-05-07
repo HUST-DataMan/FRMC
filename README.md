@@ -10,7 +10,9 @@ accurate clustering of cells in biological applications.
 Last update: v1.0.0
 
 This is a fast and robust imputation software based on matrix completion, 
-called FRMC, for single cell RNA-Seq data.
+called FRMC, for single cell RNA-Seq data. When dealing with single-cell datasets with more than 100k cells, 
+please use FRMC_LowMemoryVersion.py.
+
 
 * **FRMC_LowMemoryVersion.py**  
 Version LowMemoryVersion 2.0.0
