@@ -2,6 +2,7 @@
 """
 This is a fast and robust imputation software based on matrix completion, 
 called FRMC, for single cell RNA-Seq data .
+
 Version 1.0.0
 """
 
@@ -189,7 +190,7 @@ def FRMC(D, mu, rho, method='D_tau'):
     # thresholds
     ep1 = 1.e-4
     ep2 = 1.e-3
-    Dn = np.linalg.norm(D, 'fro')
+    Dn = LA.norm(D, 'fro')
 
     # projector matrix
     # 这里 1 表示 D 中对应位置是缺失值0；
@@ -197,15 +198,12 @@ def FRMC(D, mu, rho, method='D_tau'):
     PP = (D == 0)
     P = PP.astype(np.float)
 
-    # initialization
     m, n = np.shape(D)
     Y = np.zeros((m, n))
     Eold = np.zeros((m, n))
 
-    # iteration
     for i in range(1, 1000):
 
-        # compute SVD
         tmp = D - Eold + Y / mu
 
         tau = 1./mu
@@ -234,25 +232,21 @@ def FRMC(D, mu, rho, method='D_tau'):
         else:
             raise ValueError("unknown method")
 
-        # project
         Enew = P * (D - A + Y / mu)
         DAE = D - A - Enew
         Y += mu * DAE
 
-        # check residual and (maybe) exit
-        r1 = np.linalg.norm(DAE, 'fro')
+        r1 = LA.norm(DAE, 'fro')
         resi = r1 / Dn
         print(i, ' residual ', resi)
         if (resi < ep1):
             break
 
-        # adjust mu-factor
-        muf = np.linalg.norm((Enew - Eold), 'fro')
+        muf = LA.norm((Enew - Eold), 'fro')
         fac = min(mu, ma.sqrt(mu)) * (muf / Dn)
         if (fac < ep2):
             mu *= rho
 
-        # update E and go back
         Eold = np.copy(Enew)
 
     E = np.copy(Enew)
@@ -311,11 +305,9 @@ if __name__ == '__main__':
         sys.exit(-1)
 
     Data = pd.read_csv(sys.argv[1],index_col=0)
-    #Data_random = Data.sample(n=600, random_state=1, axis=0)
     out_name=sys.argv[2]    
 
     stime = time.time()
-    #A1=np.array(Data_random)
     A1=np.array(Data)
     A=getDropout(A1,t=0.2)
     #A=np.array(Data)
@@ -351,6 +343,5 @@ if __name__ == '__main__':
     from datetime import *
     AA[AA<=1e-4]=0
     DF_AA_2=pd.DataFrame(AA.copy(), index = Data.index, columns=Data.columns )
-    #DF_AA_2=pd.DataFrame(AA.copy(), index = Data_random.index, columns=Data_random.columns )
     outfile = out_name+"imputed"+datetime.now().strftime("%Y%m%d%H%M%S")+".csv"
     DF_AA_2.to_csv(outfile)
